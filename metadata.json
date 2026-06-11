@@ -1,6 +1,5 @@
 {
   "name": "RAG Learning Playground",
-  "description": "An interactive full-stack learning platform to visualize and understand the mechanics of Retrieval-Augmented Generation (RAG) step-by-step with real-time text chunking, embedding simulations, vector similarity search, and context-augmented language model responses.",
-  "requestFramePermissions": [],
+  "description": "An interactive full-stack learning playground for understanding Retrieval-Augmented Generation.",
   "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
 }
