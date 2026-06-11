@@ -192,7 +192,7 @@ function calculateAlignmentScore(generated: string, expected: string): number {
       if (ai) {
         try {
           const response = await ai.models.generateContent({
-            model: "gemini-3.5-flash",
+            model: "gemini-2.5-flash",
             contents: fullPromptToLlm,
             config: {
               systemInstruction: systemInstructionUsed,
@@ -235,7 +235,7 @@ function calculateAlignmentScore(generated: string, expected: string): number {
               `}`;
 
             const evalResponse = await ai.models.generateContent({
-              model: "gemini-3.5-flash",
+              model: "gemini-2.5-flash",
               contents: evalPrompt,
               config: {
                 responseMimeType: "application/json",

@@ -103,9 +103,16 @@ export default function App() {
 
   useEffect(() => {
     fetch("/api/status")
-      .then((res) => res.json())
+      .then((res) => {
+        if (!res.ok) throw new Error(`HTTP Error ${res.status}`);
+        const contentType = res.headers.get("content-type");
+        if (contentType && contentType.includes("application/json")) {
+          return res.json();
+        }
+        throw new Error("Received non-JSON content");
+      })
       .then((data) => setApiStatus(data))
-      .catch((err) => console.error("Failed to fetch API status", err));
+      .catch((err) => console.error("Failed to fetch API status:", err));
   }, []);
 
   useEffect(() => {
@@ -192,11 +199,31 @@ export default function App() {
       });
 
       if (!res.ok) {
-        const errDetails = await res.json();
-        throw new Error(errDetails.error || "RAG engine calculation failed.");
+        let errText = "RAG engine calculation failed.";
+        try {
+          const contentType = res.headers.get("content-type");
+          if (contentType && contentType.includes("application/json")) {
+            const errDetails = await res.json();
+            errText = errDetails.error || errText;
+          } else {
+            const text = await res.text();
+            errText = `HTTP Error ${res.status}: ${text.slice(0, 150).trim()}${text.length > 150 ? "..." : ""}`;
+          }
+        } catch (e) {
+          errText = `HTTP Error ${res.status}`;
+        }
+        throw new Error(errText);
       }
 
-      const data: RagResult = await res.json();
+      let data: RagResult;
+      const contentType = res.headers.get("content-type");
+      if (contentType && contentType.includes("application/json")) {
+        data = await res.json();
+      } else {
+        const text = await res.text();
+        throw new Error(`Expected JSON but got HTML/text: ${text.slice(0, 150).trim()}${text.length > 150 ? "..." : ""}`);
+      }
+
       setRagResult(data);
       setApiStatus({
         usingMockAI: data.usingMockAI,
@@ -247,11 +274,31 @@ export default function App() {
         });
 
         if (!res.ok) {
-          const errDetails = await res.json();
-          throw new Error(errDetails.error || "Server RAG Error.");
+          let errText = "Server RAG Error.";
+          try {
+            const contentType = res.headers.get("content-type");
+            if (contentType && contentType.includes("application/json")) {
+              const errDetails = await res.json();
+              errText = errDetails.error || errText;
+            } else {
+              const text = await res.text();
+              errText = `HTTP Error ${res.status}: ${text.slice(0, 150).trim()}${text.length > 150 ? "..." : ""}`;
+            }
+          } catch (e) {
+            errText = `HTTP Error ${res.status}`;
+          }
+          throw new Error(errText);
         }
 
-        const data: RagResult = await res.json();
+        let data: RagResult;
+        const contentType = res.headers.get("content-type");
+        if (contentType && contentType.includes("application/json")) {
+          data = await res.json();
+        } else {
+          const text = await res.text();
+          throw new Error(`Expected JSON but got HTML/text: ${text.slice(0, 150).trim()}${text.length > 150 ? "..." : ""}`);
+        }
+
         setRagResult(data);
         setApiStatus({
           usingMockAI: data.usingMockAI,
@@ -336,10 +383,30 @@ export default function App() {
       });
 
       if (!res.ok) {
-        throw new Error("RAG Chat processing failed.");
+        let errText = "RAG Chat processing failed.";
+        try {
+          const contentType = res.headers.get("content-type");
+          if (contentType && contentType.includes("application/json")) {
+            const errDetails = await res.json();
+            errText = errDetails.error || errText;
+          } else {
+            const text = await res.text();
+            errText = `HTTP Error ${res.status}: ${text.slice(0, 150).trim()}${text.length > 150 ? "..." : ""}`;
+          }
+        } catch (e) {
+          errText = `HTTP Error ${res.status}`;
+        }
+        throw new Error(errText);
       }
 
-      const data: RagResult = await res.json();
+      let data: RagResult;
+      const contentType = res.headers.get("content-type");
+      if (contentType && contentType.includes("application/json")) {
+        data = await res.json();
+      } else {
+        const text = await res.text();
+        throw new Error(`Expected JSON but got HTML/text: ${text.slice(0, 150).trim()}${text.length > 150 ? "..." : ""}`);
+      }
       
       // Update the main RAG visualizer state so the user sees the latest coordinates & matching chunks
       setRagResult(data);
@@ -368,7 +435,7 @@ export default function App() {
           msg.id === botMsgId
             ? {
                 ...msg,
-                text: "❌ Sorry, I encountered an error while searching the vector chunks index. Please try again.",
+                text: `❌ Error: ${err.message || "I encountered an error while searching the vector chunks index. Please try again."}`,
                 isComputing: false
               }
             : msg

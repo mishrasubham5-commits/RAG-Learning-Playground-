@@ -1,5 +1,6 @@
 {
   "name": "RAG Learning Playground",
   "description": "An interactive full-stack learning playground for understanding Retrieval-Augmented Generation.",
+  "requestFramePermissions": [],
   "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
 }
